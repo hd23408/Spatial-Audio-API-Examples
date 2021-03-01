@@ -92,6 +92,8 @@
             <p class="ourPositionContainer"></p>
             <p class="ourOrientationContainer"></p>
             <p class="ourHiFiGainContainer"></p>
+            <p class="ourUserAttenuationContainer"></p>
+            <p class="ourUserRolloffContainer"></p>
         </div>
     </div>
 
@@ -132,6 +134,13 @@
         </div>
 
         <div class="smallButtonContainer">
+            <button onclick="addUserAttenuation()">User Attenuation + 0.1</button>
+            <button onclick="subtractUserAttenuation()">User Attenuation - 0.1</button>
+            <button onclick="disableUserAttenuation()">Set User Attenuation to -99999</button>
+            <button onclick="resetUserAttenuation()">User Attenuation reset</button>
+        </div>
+
+        <div class="smallButtonContainer">
             <button onclick="resetPosition()">Reset Position</button>
         </div>
 
@@ -153,6 +162,8 @@
         let currentPosition = new HighFidelityAudio.Point3D({ "x": 0, "y": 0, "z": 0 });
         let currentOrientationEuler = new HighFidelityAudio.OrientationEuler3D({ "pitchDegrees": 0, "yawDegrees": 0, "rollDegrees": 0 });
         let currentHiFiGain = 1.0;
+        let currentUserAttenuation = 0;
+        let currentUserRolloff = 0;
 
         let ourHashedVisitID = document.querySelector(`.ourHashedVisitID`);
         let ourPositionContainer = document.querySelector(`.ourPositionContainer`);
@@ -161,6 +172,11 @@
         updateOrientationContainer();
         let ourHiFiGainContainer = document.querySelector(`.ourHiFiGainContainer`);
         updateHiFiGainContainer();
+
+        let ourUserAttenuationContainer = document.querySelector(`.ourUserAttenuationContainer`);
+        updateUserAttenuationContainer();
+        let ourUserRolloffContainer = document.querySelector(`.ourUserRolloffContainer`);
+        updateUserRolloffContainer();
 
         let connectDisconnectButton = document.querySelector(`.connectDisconnectButton`);
         connectDisconnectButton.addEventListener("click", getUserMediaWrapper);
@@ -297,6 +313,8 @@
                 position: currentPosition,
                 orientationEuler: currentOrientationEuler,
                 hiFiGain: currentHiFiGain,
+                userAttenuation: currentUserAttenuation,
+                userRolloff: currentUserRolloff,
             });
 
             hifiCommunicator = new HighFidelityAudio.HiFiCommunicator({
@@ -372,6 +390,12 @@
 
         function updateHiFiGainContainer() {
             ourHiFiGainContainer.innerHTML = `HiFi Gain: ${currentHiFiGain}`;
+        }
+        function updateUserAttenuationContainer() {
+            ourUserAttenuationContainer.innerHTML = `User Attenuation: ${currentUserAttenuation}`;
+        }
+        function updateUserRolloffContainer() {
+            ourUserRolloffContainer.innerHTML = `User Rolloff: ${currentUserRolloff}`;
         }
 
         function subtractX() {
@@ -455,6 +479,33 @@
             transmitHiFiAudioAPIDataToMixer();
         }
 
+        function addUserAttenuation() {
+            if (currentUserAttenuation >= 1) {
+                return;
+            }
+            currentUserAttenuation = ((currentUserAttenuation * 10) + 1) / 10;
+            updateUserAttenuationContainer();
+            transmitHiFiAudioAPIDataToMixer();
+        }
+        function subtractUserAttenuation() {
+            if (currentUserAttenuation <= 0) {
+                return;
+            }
+            currentUserAttenuation = ((currentUserAttenuation * 10) - 1) / 10;
+            updateUserAttenuationContainer();
+            transmitHiFiAudioAPIDataToMixer();
+        }
+        function disableUserAttenuation() {
+            currentUserAttenuation = -99999;
+            updateUserAttenuationContainer();
+            transmitHiFiAudioAPIDataToMixer();
+        }
+        function resetUserAttenuation() {
+            currentUserAttenuation = 0;
+            updateUserAttenuationContainer();
+            transmitHiFiAudioAPIDataToMixer();
+        }
+
         function sendIdentityQuaternion() {
             currentOrientationEuler.pitchDegrees = 0;
             currentOrientationEuler.yawDegrees = 0;
@@ -498,6 +549,8 @@
                 position: currentPosition,
                 orientationEuler: currentOrientationEuler,
                 hiFiGain: currentHiFiGain,
+                userAttenuation: currentUserAttenuation,
+                userRolloff: currentUserRolloff,
             }));
         }
     </script>
